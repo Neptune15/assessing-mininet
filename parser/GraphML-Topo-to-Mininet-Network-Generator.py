@@ -41,6 +41,7 @@ import xml.etree.ElementTree as ET
 import sys
 import math
 import re
+import random
 from sys import argv
 
 input_file_name = ''
@@ -182,11 +183,37 @@ def sshd( network, cmd='/usr/sbin/sshd', opts='-D' ):
         host.cmd( 'kill %' + cmd )
     network.stop()
 
+# by zys
+def start_network(network):
+    network.start()
+    
+    # DEBUGGING INFO
+    print
+    print "Dumping host connections"
+    dumpNodeConnections(network.hosts)
+
+    print
+    for host in network.hosts:
+        print host.name, host.IP()
+
+    print
+    print "*** Type 'exit' or control-D to shut down network"
+    print
+    print "*** For testing network connectivity among the hosts, wait a bit for the controller to create all the routes, then do 'pingall' on the mininet console."
+    print
+    
+    print "*** edited by zys for xjtu sdn_exp_2019"
+    print
+
+    CLI( network )
+    network.stop()
 
 if __name__ == '__main__':
     setLogLevel('info')
     #setLogLevel('debug')
-    sshd( setupNetwork(controller_ip) )
+    # by zys
+    # sshd( setupNetwork(controller_ip) )
+    start_network(setupNetwork(controller_ip))
 '''
 
 #WHERE TO PUT RESULTS
@@ -269,30 +296,42 @@ tempstring1 = ''
 tempstring2 = ''
 tempstring3 = ''
 
+# by zys
+name = set()
+for k, v in id_node_name_dict.items():
+    if v not in name:
+        name.add(v)
+    else:
+        v = v + str(k)
+        name.add(v)
+        id_node_name_dict[k] = v
+
+print id_node_name_dict.values()
+
 for i in range(0, len(id_node_name_dict)):
 
     #create switch
     temp1 =  '        '
-    temp1 += id_node_name_dict[str(i)]
+    temp1 += 's' + str(i+1)
     temp1 += " = self.addSwitch( 's"
-    temp1 += str(i)
+    temp1 += str(i+1)
     temp1 += "' )\n"
 
     #create corresponding host
     temp2 =  '        '
+    temp2 += 'h' + str(i+1)
+    temp2 += " = self.addHost( '"
     temp2 += id_node_name_dict[str(i)]
-    temp2 += "_host = self.addHost( 'h"
-    temp2 += str(i)
     temp2 += "' )\n"
     tempstring1 += temp1
     tempstring2 += temp2
 
     # link each switch and its host...
     temp3 =  '        self.addLink( '
-    temp3 += id_node_name_dict[str(i)]
+    temp3 += 's' + str(i+1)
     temp3 += ' , '
-    temp3 += id_node_name_dict[str(i)]
-    temp3 += "_host )"
+    temp3 += 'h' + str(i+1)
+    temp3 += " )"
     temp3 += '\n'
     tempstring3 += temp3
 
@@ -345,7 +384,9 @@ for e in edge_set:
 
     # t (in ms) = ( distance in km * 1000 (for meters) ) / ( speed of light / 1000 (for ms))
     # t         = ( distance       * 1000              ) / ( 1.97 * 10**8   / 1000         )
-    latency = ( distance * 1000 ) / ( 197000 )
+    # latency = ( distance * 1000 ) / ( 197000 )
+    # by zys
+    latency = random.randint(1,50)
 
     # BANDWIDTH LIMITING
     #set bw to 10mbit if nothing was specified otherwise on startup
@@ -354,9 +395,9 @@ for e in edge_set:
 
     # ... and link all corresponding switches with each other
     temp4 =  '        self.addLink( '
-    temp4 += id_node_name_dict[src_id]
+    temp4 += 's' + str(eval(src_id)+1)
     temp4 += ' , '
-    temp4 += id_node_name_dict[dst_id]
+    temp4 += 's' + str(eval(dst_id)+1)
     temp4 += ", bw="
     temp4 += bandwidth_argument
     temp4 += ", delay='"
