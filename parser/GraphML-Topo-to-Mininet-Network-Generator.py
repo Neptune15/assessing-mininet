@@ -1,5 +1,5 @@
 #!/usr/bin/python
-
+# ./GraphML-Topo-to-Mininet-Network-Generator.py -f Arpanet19723.graphml -o Arpanet19723.py
 #GraphML-Topo-to-Mininet-Network-Generator
 #
 # This file parses Network Topologies in GraphML format from the Internet Topology Zoo.
